@@ -225,8 +225,8 @@ public class Example {
             for (Result r : rs) {
                 System.out.println("获得到rowkey:" + new String(r.getRow()));
                 for (KeyValue keyValue : r.raw()) {
-                    System.out.println("列：" + new String(keyValue.getFamily())
-                            + "====值:" + new String(keyValue.getValue()));
+                    System.out.println("列：" + new String(keyValue.getFamily() + ":" + new String(keyValue.getQualifier()))
+                            + ", 值:" + new String(keyValue.getValue()));
                 }
             }
         } catch (Exception e) {

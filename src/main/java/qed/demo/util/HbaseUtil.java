@@ -1,4 +1,4 @@
-package qed.demo;
+package qed.demo.util;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;

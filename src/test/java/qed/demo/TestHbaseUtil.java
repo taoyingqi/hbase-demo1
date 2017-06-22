@@ -2,6 +2,7 @@ package qed.demo;
 
 import org.apache.hadoop.hbase.TableName;
 import org.junit.Test;
+import qed.demo.util.HbaseUtil;
 
 import java.io.IOException;
 
