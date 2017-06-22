@@ -49,20 +49,20 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
         HTable table = null;
         try {
             table = new HTable(configuration, tableName);
-            Filter filter = new PageFilter(20);
+            Filter filter = new PageFilter(40);
             Scan scan = new Scan();
             scan.setFilter(filter);
             scan.setMaxVersions();
             ResultScanner rs = table.getScanner(scan);
             for (Result r : rs) {
                 System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
-                for (KeyValue kv : r.raw()) {
+                /*for (KeyValue kv : r.raw()) {
                     System.out.println(
                             "列：" + new String(kv.getFamily()) + ":" + new String(kv.getQualifier())
                             + ", 值：" + new String(kv.getValue())
                             + ", 时间戳：" + TimeUtil.formatDate(kv.getTimestamp(), DATE_TIME_MILLIS_TYPE)
                     );
-                }
+                }*/
             }
             Configuration HBASE_CONFIG = new Configuration();
             HBASE_CONFIG.set("hbase.zookeeper.quorum", "192.168.1.1");
@@ -100,19 +100,42 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
 
     @Test
     public void selectByRowKeyPrefix() {
-        String key = "0000346e921042b9b3b09f9f0781e45b";
+        String key = "bfc908d78f024882916df2a389ced391";
         try {
             HTable table = new HTable(configuration, tableName);
             Scan scan = new Scan();
 //            Filter prefixFilter = new PrefixFilter(Bytes.toBytes(key));
+//            scan.setFilter(prefixFilter);
             /*List<byte[]> list = new ArrayList();
             list.add(new Bytes.toBytes(key));
             Filter filter = new FuzzyRowFilter(Arrays.asList(
                     new Pair<byte[], byte[]>(
                             Bytes.toBytesBinary(key),
                             new byte[] {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0})));*/
-//            scan.setRowPrefixFilter(Bytes.toBytes(key));
-            Filter filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new BinaryPrefixComparator(Bytes.toBytes(key)));
+            scan.setRowPrefixFilter(Bytes.toBytes(key));
+            ResultScanner rs = table.getScanner(scan);
+            for (Result r : rs) {
+                System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
+                /*for (KeyValue kv : r.raw()) {
+                    System.out.println(
+                            "列：" + new String(kv.getFamily()) + ":" + new String(kv.getQualifier())
+                                    + ", 值：" + new String(kv.getValue())
+                                    + ", 时间戳：" + TimeUtil.formatDate(kv.getTimestamp(), DATE_TIME_MILLIS_TYPE)
+                    );
+                }*/
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    public void selectByRowFilter() {
+        try {
+            HTable table = new HTable(configuration, tableName);
+            Scan scan = new Scan();
+            Filter filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new SubstringComparator("_20170514"));
             scan.setFilter(filter);
             ResultScanner rs = table.getScanner(scan);
             for (Result r : rs) {
@@ -129,6 +152,5 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
             e.printStackTrace();
         }
     }
-
 
 }
