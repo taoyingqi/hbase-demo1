@@ -29,7 +29,7 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
     @Before
     public void before() {
         configuration = HBaseConfiguration.create();
-        configuration.set("hbase.master", "10.0.110.121:16000");
+//        configuration.set("hbase.master", "10.0.110.121:16000");
         configuration.set("hbase.zookeeper.property.clientPort", "2181");
         configuration.set("hbase.zookeeper.quorum", "ambari02,ambari03,ambari01");
         configuration.set("zookeeper.znode.parent", "/hbase-unsecure");
@@ -204,15 +204,17 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
     // 时间子串匹配 按时间区间2
     @Test
     public void selectByTimeRange2() {
+        long start = 0;
         try {
             HTable table = new HTable(configuration, tableName);
+            start = System.currentTimeMillis();
             Scan scan = new Scan();
             /*scan.setStartRow(Bytes.toBytes(tableName.split("_")[0], "" + endId)));
             scan.setBatch(size);*/
             Filter startFilter = new RowFilter(CompareFilter.CompareOp.GREATER_OR_EQUAL
-                    , new SubstringComparator("2017051503"));
+                    , new SubstringComparator("2017051410"));
             Filter endFilter = new RowFilter(CompareFilter.CompareOp.LESS_OR_EQUAL
-                    , new SubstringComparator("2017051523"));
+                    , new SubstringComparator("2017051415"));
             FilterList filterList = new FilterList(startFilter, endFilter);
 
             scan.setFilter(filterList);
@@ -226,6 +228,39 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        long end = System.currentTimeMillis();
+        System.out.println(end- start);
+    }
+
+    // 时间子串匹配 按列时间区间
+    @Test
+    public void selectByTimeRange3() {
+        long start = 0;
+        try {
+            HTable table = new HTable(configuration, tableName);
+            start = System.currentTimeMillis();
+            Scan scan = new Scan();
+            /*scan.setStartRow(Bytes.toBytes(tableName.split("_")[0], "" + endId)));
+            scan.setBatch(size);*/
+            SingleColumnValueFilter startFilter = new SingleColumnValueFilter(Bytes.toBytes("CF"), Bytes.toBytes("SOBT")
+                    , CompareFilter.CompareOp.GREATER_OR_EQUAL, Bytes.toBytes(String.valueOf("2017051410")));
+            SingleColumnValueFilter endFilter = new SingleColumnValueFilter(Bytes.toBytes("CF"), Bytes.toBytes("SOBT")
+                    , CompareFilter.CompareOp.LESS_OR_EQUAL, Bytes.toBytes(String.valueOf("2017051415")));
+            FilterList filterList = new FilterList(startFilter, endFilter);
+
+            scan.setFilter(filterList);
+
+            ResultScanner rs = table.getScanner(scan);
+            Iterator it = rs.iterator();
+            while (it.hasNext()) {
+                Result r = rs.next();
+                System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println(end- start);
     }
 
     // 模糊
