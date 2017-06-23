@@ -14,6 +14,7 @@ import qed.demo.util.TimeUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import static qed.demo.util.TimeUtil.DATE_TIME_MILLIS_TYPE;
@@ -101,7 +102,7 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
     // 前缀匹配
     @Test
     public void selectByRowKeyPrefix() {
-        String key = "bfc908d78f024882916df2a389ced391";
+        String key = "01383bcd34444fc";
         try {
             HTable table = new HTable(configuration, tableName);
             Scan scan = new Scan();
@@ -154,14 +155,93 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
         }
     }
 
+
+    // 时间子串匹配 按小时查询
+    @Test
+    public void selectByRowTimeEqual() {
+        try {
+            HTable table = new HTable(configuration, tableName);
+            Scan scan = new Scan();
+            Filter filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new SubstringComparator("20170514"));
+            scan.setFilter(filter);
+            ResultScanner rs = table.getScanner(scan);
+            Iterator it = rs.iterator();
+            while (it.hasNext()) {
+                Result r = rs.next();
+                System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 时间子串匹配 按时间区间
+    // filter 比较慢
+    @Test
+    public void selectByTimeRange() {
+        try {
+            HTable table = new HTable(configuration, tableName);
+            Scan scan = new Scan();
+            Filter startFilter = new RowFilter(CompareFilter.CompareOp.GREATER_OR_EQUAL
+                    , new SubstringComparator("2017051503"));
+            Filter endFilter = new RowFilter(CompareFilter.CompareOp.LESS_OR_EQUAL
+                    , new SubstringComparator("2017051523"));
+            FilterList filterList = new FilterList(startFilter, endFilter);
+
+            scan.setFilter(filterList);
+
+            ResultScanner rs = table.getScanner(scan);
+            Iterator it = rs.iterator();
+            while (it.hasNext()) {
+                Result r = rs.next();
+                System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 时间子串匹配 按时间区间2
+    @Test
+    public void selectByTimeRange2() {
+        try {
+            HTable table = new HTable(configuration, tableName);
+            Scan scan = new Scan();
+            /*scan.setStartRow(Bytes.toBytes(tableName.split("_")[0], "" + endId)));
+            scan.setBatch(size);*/
+            Filter startFilter = new RowFilter(CompareFilter.CompareOp.GREATER_OR_EQUAL
+                    , new SubstringComparator("2017051503"));
+            Filter endFilter = new RowFilter(CompareFilter.CompareOp.LESS_OR_EQUAL
+                    , new SubstringComparator("2017051523"));
+            FilterList filterList = new FilterList(startFilter, endFilter);
+
+            scan.setFilter(filterList);
+
+            ResultScanner rs = table.getScanner(scan);
+            Iterator it = rs.iterator();
+            while (it.hasNext()) {
+                Result r = rs.next();
+                System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     // 模糊
     @Test
     public void selectByRowFuzzy() {
         FuzzyRowFilter filter = new FuzzyRowFilter(
                 Arrays.asList(
                         new Pair<byte[], byte[]>(
-                                Bytes.toBytesBinary("002de7c016fb4"),
-                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})));
+                                Bytes.toBytesBinary("01383bcd34444fc081be2f3bd2af9127"),
+                                new byte[] {0, 0, 0, 0, 0
+                                        , 0, 0, 0, 0, 0
+                                        , 0, 0, 0, 0, 0
+                                        , 0, 0, 0, 0, 0
+                                        , 0, 0, 0, 0, 0
+                                        , 0, 0, 0, 0, 0
+                                        , 0, 0})));
         try {
             HTable table = new HTable(configuration, tableName);
             Scan scan = new Scan();
@@ -169,21 +249,17 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
             ResultScanner rs = table.getScanner(scan);
             for (Result r : rs) {
                 System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
-                for (KeyValue kv : r.raw()) {
+                /*for (KeyValue kv : r.raw()) {
                     System.out.println(
                             "列：" + new String(kv.getFamily()) + ":" + new String(kv.getQualifier())
                                     + ", 值：" + new String(kv.getValue())
                                     + ", 时间戳：" + TimeUtil.formatDate(kv.getTimestamp(), DATE_TIME_MILLIS_TYPE)
                     );
-                }
+                }*/
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
-
     }
 
 }
