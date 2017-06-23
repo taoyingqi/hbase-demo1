@@ -56,13 +56,13 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
             ResultScanner rs = table.getScanner(scan);
             for (Result r : rs) {
                 System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
-                /*for (KeyValue kv : r.raw()) {
+                for (KeyValue kv : r.raw()) {
                     System.out.println(
                             "列：" + new String(kv.getFamily()) + ":" + new String(kv.getQualifier())
                             + ", 值：" + new String(kv.getValue())
                             + ", 时间戳：" + TimeUtil.formatDate(kv.getTimestamp(), DATE_TIME_MILLIS_TYPE)
                     );
-                }*/
+                }
             }
             Configuration HBASE_CONFIG = new Configuration();
             HBASE_CONFIG.set("hbase.zookeeper.quorum", "192.168.1.1");
@@ -98,6 +98,7 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
         }
     }
 
+    // 前缀匹配
     @Test
     public void selectByRowKeyPrefix() {
         String key = "bfc908d78f024882916df2a389ced391";
@@ -129,9 +130,9 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
         }
     }
 
-
+    // 子串匹配
     @Test
-    public void selectByRowFilter() {
+    public void selectByRowSubstring() {
         try {
             HTable table = new HTable(configuration, tableName);
             Scan scan = new Scan();
@@ -151,6 +152,38 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // 模糊
+    @Test
+    public void selectByRowFuzzy() {
+        FuzzyRowFilter filter = new FuzzyRowFilter(
+                Arrays.asList(
+                        new Pair<byte[], byte[]>(
+                                Bytes.toBytesBinary("002de7c016fb4"),
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})));
+        try {
+            HTable table = new HTable(configuration, tableName);
+            Scan scan = new Scan();
+            scan.setFilter(filter);
+            ResultScanner rs = table.getScanner(scan);
+            for (Result r : rs) {
+                System.out.println("-->>获得到rowkey:" + new String(r.getRow()));
+                for (KeyValue kv : r.raw()) {
+                    System.out.println(
+                            "列：" + new String(kv.getFamily()) + ":" + new String(kv.getQualifier())
+                                    + ", 值：" + new String(kv.getValue())
+                                    + ", 时间戳：" + TimeUtil.formatDate(kv.getTimestamp(), DATE_TIME_MILLIS_TYPE)
+                    );
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+
     }
 
 }
