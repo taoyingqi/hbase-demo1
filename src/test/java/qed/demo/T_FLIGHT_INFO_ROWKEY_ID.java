@@ -37,7 +37,7 @@ public class T_FLIGHT_INFO_ROWKEY_ID {
         configuration.set("hbase.client.retries.number", "3");
         configuration.set("hbase.rpc.timeout", "2000");
         configuration.set("hbase.client.operation.timeout", "3000");
-        configuration.set("hbase.client.scanner.timeout.period", "10000");
+//        configuration.set("hbase.client.scanner.timeout.period", "10000");
     }
 
     /**
